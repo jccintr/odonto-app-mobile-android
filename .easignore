@@ -1,0 +1,8 @@
+# É o .gitignore SEM a linha google-services.json: assim o arquivo fica fora do Git, mas vai para o build do EAS.
+node_modules
+dist
+.env
+.env.local
+.env
+expo-env.d.ts
+coverage

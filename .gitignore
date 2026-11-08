@@ -1,0 +1,7 @@
+.env
+.env.local
+coverage
+dist
+expo-env.d.ts
+google-services.json
+node_modules
