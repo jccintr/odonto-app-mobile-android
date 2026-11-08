@@ -63,8 +63,7 @@ export default function BudgetScreen({ route }) {
         {budget.status === 'open' ? (
           <>
             <Button title="Adicionar procedimento" variant="secondary" icon={Plus} onPress={() => setAdding(true)} />
-            <Button title="Aprovar orçamento" loading={busy === 'approve'} disabled={busy !== null || budget.itemsCount === 0} onPress={() => run('approve', () => Budgets.setStatus(id, 'approved'), 'Orçamento aprovado. Os procedimentos aprovados serão realizados nos atendimentos.')} />
-            <Button title="Recusar orçamento" variant="danger" loading={busy === 'reject'} disabled={busy !== null} onPress={() => run('reject', () => Budgets.setStatus(id, 'rejected'), 'Orçamento recusado.')} />
+            <Muted>Aguardando a resposta do paciente: a aprovação é registrada na recepção (secretária ou administração).</Muted>
           </>
         ) : null}
       </ScrollView>

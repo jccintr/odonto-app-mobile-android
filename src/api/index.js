@@ -54,7 +54,6 @@ export const Budgets = {
   list: (query) => get('/api/budgets', query),
   get: (id) => get(`/api/budgets/${id}`),
   create: (body) => post('/api/budgets', body),
-  setStatus: (id, status) => post(`/api/budgets/${id}/status`, { status }),
   addItem: (id, body) => post(`/api/budgets/${id}/items`, body),
   removeItem: (id, itemId) => del(`/api/budgets/${id}/items/${itemId}`),
   cancelItem: (id, itemId) => post(`/api/budgets/${id}/items/${itemId}/cancel`),

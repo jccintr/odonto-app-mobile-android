@@ -30,7 +30,6 @@ describe('rotas da API usadas pelo app', () => {
     ['Budgets.list', () => Budgets.list({ status: 'open' }), '/api/budgets', { query: { status: 'open' } }],
     ['Budgets.get', () => Budgets.get('1'), '/api/budgets/1', { query: undefined }],
     ['Budgets.create', () => Budgets.create({ patientId: 'p' }), '/api/budgets', { method: 'POST', body: { patientId: 'p' } }],
-    ['Budgets.setStatus', () => Budgets.setStatus('1', 'approved'), '/api/budgets/1/status', { method: 'POST', body: { status: 'approved' } }],
     ['Budgets.addItem', () => Budgets.addItem('1', { procedureId: 'x' }), '/api/budgets/1/items', { method: 'POST', body: { procedureId: 'x' } }],
     ['Budgets.removeItem', () => Budgets.removeItem('1', '2'), '/api/budgets/1/items/2', { method: 'DELETE' }],
     ['Budgets.cancelItem', () => Budgets.cancelItem('1', '2'), '/api/budgets/1/items/2/cancel', { method: 'POST', body: {} }],

@@ -5,7 +5,7 @@ import { asDentist, asSecretary, loginAs, pressUntil, renderApp, setWidth, until
 beforeEach(() => setWidth(390));
 
 describe('orçamentos', () => {
-  it('cria pela ficha e aprova; o procedimento fica “A realizar” até um atendimento', async () => {
+  it('cria pela ficha e fica em aberto até a recepção registrar a aprovação', async () => {
     await loginAs('dentist');
     renderApp();
     fireEvent.press(await screen.findByRole('button', { name: /Pacientes/ }));
@@ -32,28 +32,36 @@ describe('orçamentos', () => {
     expect(screen.getAllByText('R$ 200,00').length).toBeGreaterThan(0);
     fireEvent.press(screen.getByText('Salvar orçamento'));
 
-    // orçamento criado: em aberto → aprovar. A execução acontece no atendimento (não há "Realizar" direto)
+    // orçamento criado: fica em aberto. Quem registra a aprovação é a recepção, então o dentista não vê Aprovar/Recusar
     expect(await screen.findByText('Em aberto')).toBeTruthy();
-    fireEvent.press(screen.getByText('Aprovar orçamento'));
-    expect(await screen.findByText(/Orçamento aprovado/)).toBeTruthy();
-    expect(await screen.findByText('A realizar')).toBeTruthy();
-    expect(screen.queryByText('Realizar')).toBeNull();
-    expect(screen.queryByText('Realizar procedimento')).toBeNull();
+    expect(screen.getByText(/aprovação é registrada na recepção/)).toBeTruthy();
+    expect(screen.queryByText('Aprovar orçamento')).toBeNull();
+    expect(screen.queryByText('Recusar orçamento')).toBeNull();
   });
 
   it('a aba Orçamentos lista os de todos os pacientes, com filtro por situação', async () => {
+    // a recepção registra a resposta do paciente: um orçamento aprovado e outro recusado
+    const patients = await asSecretary('/api/patients?q=Marta');
+    const procedures = await asSecretary('/api/procedures?perPage=100');
+    const limpeza = procedures.data.find((p) => p.name === 'Limpeza (profilaxia)');
+    const make = () => asDentist('/api/budgets', { method: 'POST', body: { patientId: patients.data[0].id, items: [{ procedureId: limpeza.id }] } });
+    const approved = await make();
+    const rejected = await make();
+    await asSecretary(`/api/budgets/${approved.id}/status`, { method: 'POST', body: { status: 'approved' } });
+    await asSecretary(`/api/budgets/${rejected.id}/status`, { method: 'POST', body: { status: 'rejected' } });
+
     await loginAs('dentist');
     renderApp();
     fireEvent.press(await screen.findByRole('button', { name: /Orçamentos/ }));
-    expect(await screen.findByText('Marta Ferreira')).toBeTruthy();
-    expect(screen.getAllByText('Aprovado').length).toBeGreaterThan(0); // o do teste anterior
+    expect((await screen.findAllByText('Marta Ferreira')).length).toBeGreaterThan(0);
     fireEvent.press(screen.getByText('Recusados'));
-    expect(await screen.findByText('Nenhum orçamento')).toBeTruthy();
+    expect(await screen.findByTestId(`budget-${rejected.id}`)).toBeTruthy();
+    await until(() => screen.queryByTestId(`budget-${approved.id}`) === null); // a lista recarrega com o filtro
     fireEvent.press(screen.getByText('Aprovados'));
-    expect(await screen.findByText('Marta Ferreira')).toBeTruthy();
+    expect(await screen.findByTestId(`budget-${approved.id}`)).toBeTruthy();
   });
 
-  it('adiciona e remove procedimentos de um orçamento em aberto, e recusa', async () => {
+  it('adiciona e remove procedimentos de um orçamento em aberto', async () => {
     const patients = await asSecretary('/api/patients?q=Carlos');
     const procedures = await asSecretary('/api/procedures?perPage=100');
     const limpeza = procedures.data.find((p) => p.name === 'Limpeza (profilaxia)');
@@ -74,10 +82,7 @@ describe('orçamentos', () => {
 
     fireEvent.press(screen.getAllByText('Remover do orçamento')[0]);
     // o item removido sai da tela e os botões voltam a ficar ativos (enquanto uma ação roda, as outras ficam desligadas)
-    await until(() => screen.queryByText('Limpeza (profilaxia)') === null && screen.getByRole('button', { name: 'Recusar orçamento' }).props.accessibilityState?.disabled !== true);
+    await until(() => screen.queryByText('Limpeza (profilaxia)') === null && screen.getByRole('button', { name: 'Adicionar procedimento' }).props.accessibilityState?.disabled !== true);
     expect(screen.getByText('Extração simples')).toBeTruthy();
-    await pressUntil(() => screen.getByText('Recusar orçamento'), () => screen.queryByText('Orçamento recusado.') !== null);
-    expect(await screen.findByText('Recusado')).toBeTruthy();
-    expect(screen.queryByText('Aprovar orçamento')).toBeNull();
   });
 });

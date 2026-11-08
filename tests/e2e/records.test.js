@@ -10,7 +10,7 @@ describe('concluir atendimento e prontuário', () => {
     const procedures = await asSecretary('/api/procedures?perPage=100');
     const limpeza = procedures.data.find((p) => p.name === 'Limpeza (profilaxia)');
     const budget = await asDentist('/api/budgets', { method: 'POST', body: { patientId: patients.data[0].id, items: [{ procedureId: limpeza.id, tooth: 16 }] } });
-    await asDentist(`/api/budgets/${budget.id}/status`, { method: 'POST', body: { status: 'approved' } });
+    await asSecretary(`/api/budgets/${budget.id}/status`, { method: 'POST', body: { status: 'approved' } });
     const appointment = await bookTomorrow('Carlos', '20:00');
 
     await loginAs('dentist');
