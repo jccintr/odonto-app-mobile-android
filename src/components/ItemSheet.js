@@ -4,12 +4,12 @@ import { loadActiveProcedures } from '../api';
 import { errorMessage } from '../api/client';
 import { Alert, Body, Button, Card, Chip, Field, Input, Loading, Muted, Sheet } from './ui';
 import { useResource } from '../hooks';
-import { centsToInput, formatMoney, parseMoney } from '../lib/money';
+import { formatMoney } from '../lib/money';
 import { FACES, isTooth, normalizeFaces } from '../lib/tooth';
 
-const EMPTY = { procedure: null, tooth: '', faces: '', price: '', search: '' };
+const EMPTY = { procedure: null, tooth: '', faces: '', search: '' };
 
-/** Escolhe um procedimento e informa dente, faces e preço. `onSave(item)` recebe { procedure, procedureId, tooth, faces, priceCents }. */
+/** Escolhe um procedimento e informa dente e faces. O preço é o da tabela da clínica (não se altera no orçamento). `onSave(item)` recebe { procedure, procedureId, tooth, faces, priceCents } (o preço é só para exibir). */
 export default function ItemSheet({ open, onClose, onSave, title = 'Adicionar procedimento', initialTooth }) {
   const procedures = useResource(() => (open ? loadActiveProcedures() : Promise.resolve([])), [open]);
   const [form, setForm] = useState({ ...EMPTY, tooth: initialTooth ? String(initialTooth) : '' });
@@ -17,18 +17,16 @@ export default function ItemSheet({ open, onClose, onSave, title = 'Adicionar pr
   const [busy, setBusy] = useState(false);
 
   const filtered = (procedures.data ?? []).filter((p) => p.name.toLowerCase().includes(form.search.trim().toLowerCase()));
-  const pick = (procedure) => setForm({ ...form, procedure, price: centsToInput(procedure.priceCents) });
+  const pick = (procedure) => setForm({ ...form, procedure });
   const toggleFace = (face) => setForm((f) => ({ ...f, faces: normalizeFaces(f.faces.includes(face) ? f.faces.replace(face, '') : f.faces + face) }));
 
   const save = async () => {
     const tooth = form.tooth.trim() === '' ? null : Number(form.tooth);
-    const priceCents = parseMoney(form.price);
     if (tooth !== null && !isTooth(tooth)) return setError('Dente inválido. Use a numeração FDI (ex.: 16, 21, 48 ou 55).');
     if (form.faces && tooth === null) return setError('Informe o dente para indicar as faces.');
-    if (priceCents === null) return setError('Informe um valor válido.');
     setError(null); setBusy(true);
     try {
-      await onSave({ procedure: form.procedure, procedureId: form.procedure.id, tooth: tooth ?? undefined, faces: form.faces || undefined, priceCents });
+      await onSave({ procedure: form.procedure, procedureId: form.procedure.id, tooth: tooth ?? undefined, faces: form.faces || undefined, priceCents: form.procedure.priceCents });
       setForm({ ...EMPTY });
     } catch (err) { setError(errorMessage(err)); } finally { setBusy(false); }
   };
@@ -47,12 +45,11 @@ export default function ItemSheet({ open, onClose, onSave, title = 'Adicionar pr
         </>
       ) : (
         <>
-          <Card><Body style={{ fontWeight: '700' }}>{form.procedure.name}</Body></Card>
+          <Card><Body style={{ fontWeight: '700' }}>{form.procedure.name}</Body><Muted>Valor da tabela da clínica: {formatMoney(form.procedure.priceCents)}</Muted></Card>
           <Input label="Dente (opcional)" keyboardType="number-pad" maxLength={2} hint="Numeração FDI: 11 a 48; dentes de leite 51 a 85." value={form.tooth} onChangeText={(tooth) => setForm({ ...form, tooth: tooth.replace(/\D/g, '') })} />
           <Field label="Faces (opcional)">
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{FACES.map((f) => <Chip key={f.id} label={f.label} selected={form.faces.includes(f.id)} onPress={() => toggleFace(f.id)} />)}</View>
           </Field>
-          <Input label="Valor (R$)" keyboardType="decimal-pad" value={form.price} onChangeText={(price) => setForm({ ...form, price })} />
         </>
       )}
     </Sheet>

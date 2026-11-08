@@ -18,7 +18,7 @@ export default function NewBudgetScreen({ route, navigation }) {
   const save = async () => {
     setBusy(true); setError(null);
     try {
-      const created = await Budgets.create({ patientId: patient.id, items: items.map(({ procedureId, tooth, faces, priceCents }) => ({ procedureId, tooth, faces, priceCents })) });
+      const created = await Budgets.create({ patientId: patient.id, items: items.map(({ procedureId, tooth, faces }) => ({ procedureId, tooth, faces })) });
       navigation.replace('Budget', { id: created.id });
     } catch (err) { setError(errorMessage(err)); setBusy(false); }
   };

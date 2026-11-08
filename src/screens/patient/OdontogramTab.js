@@ -76,7 +76,7 @@ export default function OdontogramTab({ patient }) {
               <Row><View style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: CONDITION[r.condition]?.color }} /><Body style={{ fontWeight: '700' }}>{CONDITION[r.condition]?.label ?? r.condition}{r.faces ? ` (${r.faces})` : ''}</Body></Row>
               <Button title="Remover" variant="ghost" onPress={() => unmark(r)} />
             </Row>
-            <Muted>{formatDay(r.recordedOn)}{r.sourceItemId ? ' · automática (procedimento realizado)' : ''}</Muted>
+            <Muted>{formatDay(r.recordedOn)}{r.sourceItemId ? ' · automática (procedimento realizado)' : ''}{r.recordedByName ? ` · ${r.recordedByName}` : ''}</Muted>
             {r.notes ? <Body>{r.notes}</Body> : null}
           </Card>
         ))}

@@ -70,7 +70,7 @@ export default function BudgetScreen({ route }) {
       </ScrollView>
 
       <ItemSheet open={adding} onClose={() => setAdding(false)} onSave={async (item) => {
-        await Budgets.addItem(id, { procedureId: item.procedureId, tooth: item.tooth, faces: item.faces, priceCents: item.priceCents });
+        await Budgets.addItem(id, { procedureId: item.procedureId, tooth: item.tooth, faces: item.faces });
         setAdding(false);
         await res.reload();
       }} />

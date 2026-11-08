@@ -15,7 +15,7 @@ describe('orçamentos', () => {
     expect(await screen.findByText('Nenhum orçamento para este paciente')).toBeTruthy();
     fireEvent.press(screen.getByText('Novo orçamento'));
 
-    // novo orçamento: procedimento com dente, face e valor
+    // novo orçamento: procedimento com dente e face (o valor é o da tabela da clínica)
     expect(await screen.findByText('Nenhum procedimento ainda. Toque em “Adicionar procedimento”.')).toBeTruthy();
     fireEvent.press(screen.getByText('Adicionar procedimento'));
     fireEvent.changeText(await screen.findByLabelText('Buscar procedimento'), 'resina');
@@ -25,7 +25,7 @@ describe('orçamentos', () => {
     expect(await screen.findByText(/Dente inválido/)).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText('Dente (opcional)'), '16');
     fireEvent.press(screen.getByText('Oclusal/Incisal'));
-    expect((screen.getByLabelText('Valor (R$)')).props.value).toBe('200,00');
+    expect(screen.getByText(/Valor da tabela da clínica: R\$ 200,00/)).toBeTruthy();
     fireEvent.press(screen.getByText('Adicionar'));
 
     expect(await screen.findByText('Restauração em resina — dente 16 (O)')).toBeTruthy();
@@ -67,10 +67,8 @@ describe('orçamentos', () => {
 
     fireEvent.press(screen.getByText('Adicionar procedimento'));
     fireEvent.press(await screen.findByText('Extração simples'));
-    fireEvent.changeText(await screen.findByLabelText('Valor (R$)'), 'abc');
-    fireEvent.press(screen.getByText('Adicionar'));
-    expect(await screen.findByText('Informe um valor válido.')).toBeTruthy();
-    fireEvent.changeText(screen.getByLabelText('Valor (R$)'), '250');
+    expect(await screen.findByText(/Valor da tabela da clínica/)).toBeTruthy(); // o preço não se edita no orçamento
+    expect(screen.queryByLabelText('Valor (R$)')).toBeNull();
     fireEvent.press(screen.getByText('Adicionar'));
     expect(await screen.findByText('Extração simples')).toBeTruthy();
 
