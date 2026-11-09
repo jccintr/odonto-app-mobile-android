@@ -30,6 +30,11 @@ describe('pacientes', () => {
     fireEvent.changeText(search, 'ana');
     fireEvent.press(await screen.findByText('Ana Lima'));
 
+    // a barra de título diz "Ficha do paciente" (o nome aparece uma vez só, no corpo da ficha) e tem a seta de voltar
+    expect(await screen.findByRole('header', { name: 'Ficha do paciente' })).toBeTruthy();
+    expect(await screen.findByText('Ana Lima')).toBeTruthy(); // visível só uma vez (a lista por baixo fica oculta)
+    expect(screen.getByRole('button', { name: 'Voltar' })).toBeTruthy();
+
     // ficha: resumo com o alerta da anamnese
     expect(await screen.findByText(/Atenção na anamnese: Diabetes · Alergias: Dipirona/)).toBeTruthy();
     expect(screen.queryByText('(35) 99999-0001')).toBeNull(); // o dentista não vê o telefone do paciente

@@ -6,6 +6,7 @@ import { CalendarDays, ClipboardList, UserRound, Users } from 'lucide-react-nati
 import { Loading, Screen } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import AppHeader from '../components/AppHeader';
 import AccountScreen from '../screens/AccountScreen';
 import AgendaScreen, { AppointmentScreen } from '../screens/AgendaScreen';
 import BudgetScreen from '../screens/BudgetScreen';
@@ -18,6 +19,9 @@ import PatientsScreen from '../screens/PatientsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
+
+// telas internas: barra de título própria (voltar + título centralizados), igual em todas
+const inner = { headerShown: true, header: (props) => <AppHeader {...props} /> };
 
 const TAB_ICONS = { Agenda: CalendarDays, Pacientes: Users, Orçamentos: ClipboardList, Conta: UserRound };
 
@@ -55,10 +59,10 @@ export default function Navigation() {
     content = (
       <>
         <Stack.Screen name="Main" component={MainTabs} />
-        <Stack.Screen name="Appointment" component={AppointmentScreen} options={{ headerShown: true, title: 'Atendimento' }} />
-        <Stack.Screen name="Patient" component={PatientScreen} options={({ route }) => ({ headerShown: true, title: route.params?.name ?? 'Paciente' })} />
-        <Stack.Screen name="Budget" component={BudgetScreen} options={{ headerShown: true, title: 'Orçamento' }} />
-        <Stack.Screen name="NewBudget" component={NewBudgetScreen} options={{ headerShown: true, title: 'Novo orçamento' }} />
+        <Stack.Screen name="Appointment" component={AppointmentScreen} options={{ ...inner, title: 'Atendimento' }} />
+        <Stack.Screen name="Patient" component={PatientScreen} options={{ ...inner, title: 'Ficha do paciente' }} />
+        <Stack.Screen name="Budget" component={BudgetScreen} options={{ ...inner, title: 'Orçamento' }} />
+        <Stack.Screen name="NewBudget" component={NewBudgetScreen} options={{ ...inner, title: 'Novo orçamento' }} />
       </>
     );
   }

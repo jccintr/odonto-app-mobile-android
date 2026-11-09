@@ -90,24 +90,29 @@ export function WeekGrid({ days, groups, list, today, onOpen, onPickDay, onRefre
 const WEEK_HEAD = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
 /** Mês: grade com a quantidade de atendimentos de cada dia; tocar abre o dia. */
+// 7 colunas de largura idêntica (o conteúdo da célula não a altera) e o mesmo espaçamento no cabeçalho e nas semanas
+const COLUMN = { width: `${100 / 7}%`, paddingHorizontal: 3 };
+
 export function MonthGrid({ day, counts, today, onPickDay, onRefresh }) {
   const { c } = useTheme();
   return (
-    <ScrollView refreshControl={refresh(c, onRefresh)} contentContainerStyle={{ padding: 12, gap: 6 }}>
+    <ScrollView refreshControl={refresh(c, onRefresh)} contentContainerStyle={{ padding: 9, gap: 6 }}>
       <View style={{ flexDirection: 'row' }}>
-        {WEEK_HEAD.map((d, i) => <Text key={i} style={{ flex: 1, textAlign: 'center', color: c.muted, fontWeight: '700' }}>{d}</Text>)}
+        {WEEK_HEAD.map((d, i) => <Text key={i} style={{ ...COLUMN, textAlign: 'center', color: c.muted, fontWeight: '700' }}>{d}</Text>)}
       </View>
       {monthGrid(monthOf(day)).map((week, w) => (
-        <View key={w} style={{ flexDirection: 'row', gap: 6 }}>
+        <View key={w} style={{ flexDirection: 'row' }}>
           {week.map((d, i) => {
-            if (!d) return <View key={i} style={{ flex: 1 }} />;
+            if (!d) return <View key={i} style={COLUMN} />;
             const n = counts[d] ?? 0;
             return (
-              <Pressable key={d} accessibilityRole="button" accessibilityLabel={`Dia ${formatDay(d)}, ${n === 0 ? 'sem atendimentos' : `${n} ${n === 1 ? 'atendimento' : 'atendimentos'}`}`} onPress={() => onPickDay(d)}
+              <View key={d} style={COLUMN}>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Dia ${formatDay(d)}, ${n === 0 ? 'sem atendimentos' : `${n} ${n === 1 ? 'atendimento' : 'atendimentos'}`}`} onPress={() => onPickDay(d)}
                 style={{ flex: 1, minHeight: 64, borderRadius: 10, padding: 6, alignItems: 'center', justifyContent: 'space-between', backgroundColor: n > 0 ? c.primarySoft : c.surface, borderWidth: d === today ? 2 : 1, borderColor: d === today ? c.primary : c.border }}>
                 <Text style={{ color: c.text, fontWeight: d === today ? '800' : '600' }}>{Number(d.slice(8))}</Text>
                 {n > 0 ? <View style={{ minWidth: 22, borderRadius: 11, paddingHorizontal: 6, paddingVertical: 1, backgroundColor: c.primary }}><Text style={{ color: c.primaryFg, fontSize: 12, fontWeight: '800', textAlign: 'center' }}>{n}</Text></View> : <View />}
               </Pressable>
+              </View>
             );
           })}
         </View>
