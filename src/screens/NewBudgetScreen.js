@@ -5,11 +5,13 @@ import { Budgets } from '../api';
 import { errorMessage } from '../api/client';
 import ItemSheet from '../components/ItemSheet';
 import { Alert, Body, Button, Card, Label, Muted, Row, Screen, Title } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
 import { itemLabel, subtotalOf } from '../lib/budget';
 import { formatMoney } from '../lib/money';
 
 export default function NewBudgetScreen({ route, navigation }) {
   const { patient } = route.params;
+  const { dentistId } = useAuth();
   const [items, setItems] = useState([]);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState(null);
@@ -18,7 +20,7 @@ export default function NewBudgetScreen({ route, navigation }) {
   const save = async () => {
     setBusy(true); setError(null);
     try {
-      const created = await Budgets.create({ patientId: patient.id, items: items.map(({ procedureId, tooth, faces }) => ({ procedureId, tooth, faces })) });
+      const created = await Budgets.create({ patientId: patient.id, dentistId, items: items.map(({ procedureId, tooth, faces }) => ({ procedureId, tooth, faces })) });
       navigation.replace('Budget', { id: created.id });
     } catch (err) { setError(errorMessage(err)); setBusy(false); }
   };

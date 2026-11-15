@@ -3,7 +3,7 @@ import { SWIPE_MIN_DISTANCE, swipeDirection } from '../../src/lib/gestures';
 import * as agenda from '../../src/lib/agenda';
 import { monthShort, weekdayIndex } from '../../src/lib/dates';
 import { centsToInput, formatMoney, parseMoney } from '../../src/lib/money';
-import { maskCpf, onlyDigits } from '../../src/lib/masks';
+import { isValidPhone, maskCpf, maskPhone, onlyDigits } from '../../src/lib/masks';
 import { ANAMNESIS_CONDITIONS, conditionLabels, emptyAnamnesis, readAnamnesis } from '../../src/lib/patient';
 import { buildEvolution, evolutionProblem, toggleEntry, toggleToothOf, toggleWholeMouthOf, whereLabel } from '../../src/lib/evolution';
 import { itemLabel, subtotalOf } from '../../src/lib/budget';
@@ -79,6 +79,8 @@ describe('máscaras', () => {
     expect(onlyDigits(null)).toBe('');
     expect(maskCpf('52998224725')).toBe('529.982.247-25');
     expect(maskCpf('529')).toBe('529');
+    expect([maskPhone('35'), maskPhone('35999'), maskPhone('3533331234'), maskPhone('35999991234999')]).toEqual(['35', '(35) 999', '(35) 3333-1234', '(35) 99999-1234']);
+    expect([isValidPhone(''), isValidPhone('(35) 3333-1234'), isValidPhone('35999991234'), isValidPhone('3599')]).toEqual([true, true, true, false]);
     expect(maskCpf('5299822')).toBe('529.982.2');
   });
 });

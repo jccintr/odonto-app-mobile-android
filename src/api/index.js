@@ -8,9 +8,13 @@ const patch = send('PATCH');
 const del = (path) => request(path, { method: 'DELETE' });
 
 export const Auth = {
-  login: (email, password) => request('/api/auth/login', { method: 'POST', body: { email, password }, auth: false }),
+  // com mais de uma clínica, sem clinicId a API devolve { clinicSelectionRequired: true, clinics } para escolher
+  login: (email, password, clinicId) => request('/api/auth/login', { method: 'POST', body: { email, password, ...(clinicId && { clinicId }) }, auth: false }),
   logout: (refreshToken) => request('/api/auth/logout', { method: 'POST', body: { refreshToken }, auth: false }),
   me: () => get('/api/auth/me'),
+  updateMe: (changes) => patch('/api/auth/me', changes),
+  clinics: () => get('/api/auth/clinics'),
+  switchClinic: (clinicId) => post('/api/auth/switch-clinic', { clinicId }),
   resendVerification: (email) => request('/api/auth/resend-verification', { method: 'POST', body: { email }, auth: false }),
   forgotPassword: (email) => request('/api/auth/forgot-password', { method: 'POST', body: { email }, auth: false }),
   changePassword: (currentPassword, newPassword) => post('/api/auth/change-password', { currentPassword, newPassword }),

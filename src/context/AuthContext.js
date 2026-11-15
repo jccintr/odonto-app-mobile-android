@@ -5,7 +5,10 @@ import { Auth } from '../api';
 const Ctx = createContext(null);
 export const useAuth = () => useContext(Ctx);
 
-/** Sessão do dentista. O app é só para dentistas: administração e secretária usam o painel web. */
+/**
+ * Sessão do dentista. O app é de quem atende pacientes: o dentista e o administrador que também atende (clínica pequena).
+ * A secretária e o administrador que não atende usam o painel web. Uma pessoa pode trabalhar em mais de uma clínica.
+ */
 export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null); // { user, clinic }
   const [booting, setBooting] = useState(true);
@@ -33,11 +36,24 @@ export function AuthProvider({ children }) {
   const value = useMemo(() => ({
     user: profile?.user ?? null,
     clinic: profile?.clinic ?? null,
-    isDentist: profile?.user?.role === 'dentist',
+    // quem atende nesta clínica: perfil dentista, ou administrador com o atendimento ligado
+    isDentist: Boolean(profile?.user?.attendsPatients || profile?.user?.role === 'dentist'),
+    /** perfil clínico desta pessoa nesta clínica: o app mostra a agenda e os orçamentos dele (o administrador veria os de todos) */
+    dentistId: profile?.user?.dentistId ?? null,
     booting,
     suspended,
-    async login(email, password) {
-      const session = await Auth.login(email, password);
+    /** Entra. Quem trabalha em mais de uma clínica recebe a lista para escolher: devolve { clinics } e não abre sessão. */
+    async login(email, password, clinicId) {
+      const result = await Auth.login(email, password, clinicId);
+      if (result.clinicSelectionRequired) return { clinics: result.clinics };
+      await setSession(result);
+      setSuspended(false);
+      setProfile({ user: result.user, clinic: result.clinic });
+      return {};
+    },
+    /** Troca a sessão para outra clínica da mesma pessoa (sem pedir a senha). */
+    async switchClinic(clinicId) {
+      const session = await Auth.switchClinic(clinicId);
       await setSession(session);
       setSuspended(false);
       setProfile({ user: session.user, clinic: session.clinic });
@@ -49,6 +65,7 @@ export function AuthProvider({ children }) {
       setSuspended(false);
       if (refresh) await Auth.logout(refresh).catch(() => {});
     },
+    updateUser: (user) => setProfile((p) => (p ? { ...p, user } : p)),
     /** depois de trocar a senha a API devolve uma sessão nova */
     async adopt(session) {
       await setSession(session);

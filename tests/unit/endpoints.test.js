@@ -9,6 +9,10 @@ beforeEach(() => { request.mockReset().mockResolvedValue({ ok: true }); });
 describe('rotas da API usadas pelo app', () => {
   it.each([
     ['Auth.login', () => Auth.login('a@b.c', 'x'), '/api/auth/login', { method: 'POST', body: { email: 'a@b.c', password: 'x' }, auth: false }],
+    ['Auth.login (escolhendo a clínica)', () => Auth.login('a@b.c', 'x', 'c1'), '/api/auth/login', { method: 'POST', body: { email: 'a@b.c', password: 'x', clinicId: 'c1' }, auth: false }],
+    ['Auth.updateMe', () => Auth.updateMe({ phone: '35999991234' }), '/api/auth/me', { method: 'PATCH', body: { phone: '35999991234' } }],
+    ['Auth.clinics', () => Auth.clinics(), '/api/auth/clinics', { query: undefined }],
+    ['Auth.switchClinic', () => Auth.switchClinic('c1'), '/api/auth/switch-clinic', { method: 'POST', body: { clinicId: 'c1' } }],
     ['Auth.logout', () => Auth.logout('r'), '/api/auth/logout', { method: 'POST', body: { refreshToken: 'r' }, auth: false }],
     ['Auth.me', () => Auth.me(), '/api/auth/me', { query: undefined }],
     ['Auth.resendVerification', () => Auth.resendVerification('a@b.c'), '/api/auth/resend-verification', { method: 'POST', body: { email: 'a@b.c' }, auth: false }],

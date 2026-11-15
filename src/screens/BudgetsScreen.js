@@ -4,13 +4,15 @@ import { ClipboardList } from 'lucide-react-native';
 import { Budgets } from '../api';
 import BudgetCard from '../components/BudgetCard';
 import { Chip, EmptyState, ErrorState, Loading, Screen, Title } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
 import { useResource } from '../hooks';
 
 const FILTERS = [['', 'Todos'], ['open', 'Em aberto'], ['approved', 'Aprovados'], ['completed', 'Concluídos'], ['rejected', 'Recusados']];
 
 export default function BudgetsScreen({ navigation }) {
   const [status, setStatus] = useState('');
-  const res = useResource(() => Budgets.list({ status, perPage: 50 }), [status]);
+  const { dentistId } = useAuth();
+  const res = useResource(() => Budgets.list({ dentistId, status, perPage: 50 }), [dentistId, status]);
   useEffect(() => navigation.addListener('focus', () => { res.reload(); }), [navigation, res.reload]);
 
   return (

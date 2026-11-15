@@ -6,6 +6,7 @@ import { Appointments } from '../api';
 import AppointmentPanel from './AppointmentPanel';
 import { MonthGrid, WeekGrid, WeekList } from './agenda/Views';
 import { Body, Button, Card, EmptyState, ErrorState, Loading, Muted, Row, Screen, Segmented, Sheet, StatusBadge, Title } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLayout, useResource } from '../hooks';
 import { CURRENT_LABEL, VIEWS, countsByDay, groupByDay, includesToday, periodTitle, rangeFor, shiftPeriod, sortByStart, weekDays } from '../lib/agenda';
@@ -42,7 +43,9 @@ export default function AgendaScreen({ navigation }) {
   const [picking, setPicking] = useState(false);
   const touch = useRef(null);
   const range = rangeFor(view, day);
-  const res = useResource(() => Appointments.listAll({ from: toIso(range.from, '00:00'), to: toIso(range.to, '00:00') }), [range.from, range.to]);
+  // a própria agenda (o administrador que também atende veria a da clínica inteira sem o filtro)
+  const { dentistId } = useAuth();
+  const res = useResource(() => Appointments.listAll({ dentistId, from: toIso(range.from, '00:00'), to: toIso(range.to, '00:00') }), [dentistId, range.from, range.to]);
 
   const list = sortByStart(res.data ?? []);
   const selected = list.find((a) => a.id === selectedId) ?? null;
